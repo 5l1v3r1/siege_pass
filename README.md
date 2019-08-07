@@ -1,5 +1,7 @@
 # season pass unlocker
 
+WIP!!!!!!!!!
+
 how to use:
 
   inject as the game is being opened
