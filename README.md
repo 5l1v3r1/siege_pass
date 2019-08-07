@@ -1,4 +1,3 @@
-# siege_pass
 # season pass unlocker
 
 how to use:
