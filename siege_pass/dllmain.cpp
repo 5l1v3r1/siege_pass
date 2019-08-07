@@ -24,7 +24,7 @@ bool __stdcall PatchFunction( HMODULE module_start )
 
 	auto uplay_r1 = GetModuleHandleA( "uplay_r1_loader64.dll" );
 
-	while (!uplay_r1)
+	while ( !uplay_r1 )
 		uplay_r1 = GetModuleHandleA( "uplay_r1_loader64.dll" );
 
 	std::printf( "	%s -> uplay_r1_loader64.dll found at 0x%p\n", __FUNCTION__, uplay_r1 );
