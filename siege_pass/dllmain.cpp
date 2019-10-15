@@ -10,13 +10,13 @@ bool __stdcall PatchFunction( HMODULE module_start )
 	AllocConsole( );
 	SetConsoleTitleA( "Season Pass Unlocker" );
 
-	const auto exit_procedure = [ ]( HMODULE start )
+	const auto exit_procedure = [ &module_start ]( )
 	{
-		fclose( reinterpret_cast< FILE* >( stdin ) );
-		fclose( reinterpret_cast< FILE* >( stdout ) );
+		fclose( stdin );
+		fclose( stdout );
 		FreeConsole( );
 		PostMessage( GetConsoleWindow( ), WM_CLOSE, 0, 0 );
-		FreeLibraryAndExitThread( start, EXIT_SUCCESS );
+		FreeLibraryAndExitThread( module_start, EXIT_SUCCESS );
 	};
 
 	freopen_s( reinterpret_cast< FILE** >( stdin ), "CONIN$", "r", stdin );
@@ -35,7 +35,7 @@ bool __stdcall PatchFunction( HMODULE module_start )
 	{
 		std::printf( "	%s -> couldn't get UPLAY_USER_IsOwned procedure\n", __FUNCTION__ );
 		std::this_thread::sleep_for( std::chrono::seconds( 5 ) );
-		exit_procedure( module_start );
+		exit_procedure( );
 		return false;
 	}
 
@@ -73,15 +73,18 @@ bool __stdcall PatchFunction( HMODULE module_start )
 	while ( !GetAsyncKeyState( VK_END ) )
 		std::this_thread::sleep_for( std::chrono::milliseconds( 10 ) );
 
-	exit_procedure( module_start );
+	exit_procedure( );
 
 	return true;
 }
 
 bool __stdcall DllMain( HMODULE module_start, std::uint32_t call_reason, void* reserved )
 {
-	if ( call_reason == DLL_PROCESS_ATTACH )
-		return CreateThread(nullptr, 0, reinterpret_cast<LPTHREAD_START_ROUTINE>(PatchFunction), module_start, 0, nullptr) != INVALID_HANDLE_VALUE;
+	if ( call_reason != DLL_PROCESS_ATTACH )
+		return false;
+	
+	if ( const auto handle = CreateThread(nullptr, 0, reinterpret_cast<LPTHREAD_START_ROUTINE>(PatchFunction), module_start, 0, nullptr); handle != NULL)
+		CloseHandle(handle);
 
 	return true;
 }
